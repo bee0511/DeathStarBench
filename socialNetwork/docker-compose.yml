@@ -1,4 +1,11 @@
 version: "3.9"
+
+x-user-proxy: &userProxy
+  build:
+    context: ./nginx-probe          # contains ping.Dockerfile + template
+    dockerfile: ping.Dockerfile
+  restart: always
+
 services:
   social-graph-service:
     image: deathstarbench/social-network-microservices:latest
@@ -136,20 +143,109 @@ services:
     #      - 27021:27017
     restart: always
 
-  user-service:
-    image: deathstarbench/social-network-microservices:latest
-    hostname: user-service
-    #    ports:
-    #      - 10005:9090
+ # -------------------------- Prequal admin & RabbitMQ ----------------------
+  admin:
+    build:
+      context: ../loadbalancer
+      dockerfile: Dockerfile.admin
+    hostname: admin
     restart: always
     depends_on:
-      jaeger-agent:
-        condition: service_started
-      user-mongodb:
-        condition: service_started
+      jaeger-agent: { condition: service_started }
+    environment:
+      - TZ=UTC
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # -------------------------- Prequal load balancer -------------------------
+  user-service:
+    build:
+      context: ../loadbalancer
+      dockerfile: Dockerfile.loadbalancer
+    hostname: user-service
+    restart: always
+    depends_on:
+      user1: { condition: service_started }
+      user2: { condition: service_started }
+      user3: { condition: service_started }
+      user4: { condition: service_started }
+      admin:  { condition: service_started }
+      rabbitmq: { condition: service_healthy }
+    environment:
+      - ADMIN_BASE=http://admin:8080
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../loadbalancer:/app
+
+  # -------------------------- four THRIFT replicas --------------------------
+  x-user-thrift: &userThrift
+    image: deathstarbench/social-network-microservices:latest
     entrypoint: UserService
+    restart: always
+    depends_on:
+      jaeger-agent: { condition: service_started }
+      user-mongodb: { condition: service_started }
     volumes:
       - ./config:/social-network-microservices/config
+
+  user1_thrift:
+    <<: *userThrift
+    hostname: user1_thrift
+  user2_thrift:
+    <<: *userThrift
+    hostname: user2_thrift
+  user3_thrift:
+    <<: *userThrift
+    hostname: user3_thrift
+  user4_thrift:
+    <<: *userThrift
+    hostname: user4_thrift
+
+  # -------------------------- four Nginx probe proxies ----------------------
+  user1:
+    <<: *userProxy        # inherits build & restart
+    hostname: user1
+    environment:
+      - THRIFT_HOST=user1_thrift
+    depends_on:
+      - user1_thrift
+
+  user2:
+    <<: *userProxy
+    hostname: user2
+    environment:
+      - THRIFT_HOST=user2_thrift
+    depends_on:
+      - user2_thrift
+
+  user3:
+    <<: *userProxy
+    hostname: user3
+    environment:
+      - THRIFT_HOST=user3_thrift
+    depends_on:
+      - user3_thrift
+
+  user4:
+    <<: *userProxy
+    hostname: user4
+    environment:
+      - THRIFT_HOST=user4_thrift
+    depends_on:
+      - user4_thrift
 
   user-memcached:
     image: memcached

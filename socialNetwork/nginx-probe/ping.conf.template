@@ -1,0 +1,13 @@
+server {
+    listen 80;
+
+    location = /ping {
+        default_type application/json;
+        return 200 '{"serverName":"$hostname","requestsInFlight":0,"latency":1}';
+    }
+
+    # Upstream host injected by envsubst
+    location / {
+        proxy_pass http://${THRIFT_HOST}:9090;
+    }
+}
