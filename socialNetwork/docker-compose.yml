@@ -306,11 +306,12 @@ services:
       - ./gen-lua:/gen-lua
       - ./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift
 
-  load-balancer:
+
+  round-robin-lb:
     image: openresty/openresty:1.25.3.1-alpine
-    hostname: load-balancer
+    hostname: round-robin-lb
     ports:
-      - "10001:80"          # wrk2: http://localhost:10001/
+      - "20001:80"          # wrk2: http://localhost:20001/
     depends_on:
       - nginx-thrift-1
       - nginx-thrift-2
@@ -318,8 +319,37 @@ services:
       - nginx-thrift-4
     restart: always
     volumes:
-      - ./load-balancer/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
-      - ./load-balancer/prequal.lua:/usr/local/openresty/nginx/conf/prequal.lua:ro
+      - ./round-robin-lb/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+
+  p2c-lb:
+    image: openresty/openresty:1.25.3.1-alpine
+    hostname: p2c-lb
+    ports:
+      - "20002:80"          # wrk2: http://localhost:20002/
+    depends_on:
+      - nginx-thrift-1
+      - nginx-thrift-2
+      - nginx-thrift-3
+      - nginx-thrift-4
+    restart: always
+    volumes:
+      - ./p2c-lb/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./p2c-lb/p2c.lua:/usr/local/openresty/nginx/conf/p2c.lua:ro
+
+  prequal-lb:
+    image: openresty/openresty:1.25.3.1-alpine
+    hostname: prequal-lb
+    ports:
+      - "20003:80"          # wrk2: http://localhost:20003/
+    depends_on:
+      - nginx-thrift-1
+      - nginx-thrift-2
+      - nginx-thrift-3
+      - nginx-thrift-4
+    restart: always
+    volumes:
+      - ./prequal-lb/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./prequal-lb/prequal.lua:/usr/local/openresty/nginx/conf/prequal.lua:ro
 
   media-frontend:
     image: yg397/media-frontend:xenial

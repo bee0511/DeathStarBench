@@ -135,7 +135,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--ip', help='IP address of socialNetwork NGINX web server. ', default='127.0.0.1')
   parser.add_argument(
-      '--port', help='IP port of socialNetwork NGINX web server.', default=10001)
+      '--port', help='IP port of socialNetwork NGINX web server.', default=20001)
   parser.add_argument('--compose', action='store_true',
                       help='intialize with up to 20 posts per user', default=False)
   parser.add_argument('--limit', type=int, help='total number simultaneous connections', default=200)
