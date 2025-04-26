@@ -1,4 +1,19 @@
 version: "3.9"
+
+x-nginx-thrift-common: &nginx-thrift
+  image: yg397/openresty-thrift:xenial
+  depends_on:
+    jaeger-agent:
+      condition: service_started
+  restart: always
+  volumes:
+    - ./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts
+    - ./nginx-web-server/pages:/usr/local/openresty/nginx/pages
+    - ./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+    - ./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json
+    - ./gen-lua:/gen-lua
+    - ./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift
+
 services:
   social-graph-service:
     image: deathstarbench/social-network-microservices:latest
@@ -247,65 +262,24 @@ services:
       - ./config:/social-network-microservices/config
 
   nginx-thrift-1:
-    image: yg397/openresty-thrift:xenial
+    <<: *nginx-thrift 
     hostname: nginx-thrift-1
-    depends_on:
-      jaeger-agent:
-        condition: service_started
-    restart: always
-    volumes:
-      - ./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts
-      - ./nginx-web-server/pages:/usr/local/openresty/nginx/pages
-      - ./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-      - ./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json
-      - ./gen-lua:/gen-lua
-      - ./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift
+    container_name: nginx-thrift-1
 
   nginx-thrift-2:
-    image: yg397/openresty-thrift:xenial
+    <<: *nginx-thrift
     hostname: nginx-thrift-2
-    depends_on:
-      jaeger-agent:
-        condition: service_started
-    restart: always
-    volumes:
-      - ./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts
-      - ./nginx-web-server/pages:/usr/local/openresty/nginx/pages
-      - ./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-      - ./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json
-      - ./gen-lua:/gen-lua
-      - ./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift
+    container_name: nginx-thrift-2
 
   nginx-thrift-3:
-    image: yg397/openresty-thrift:xenial
+    <<: *nginx-thrift
     hostname: nginx-thrift-3
-    depends_on:
-      jaeger-agent:
-        condition: service_started
-    restart: always
-    volumes:
-      - ./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts
-      - ./nginx-web-server/pages:/usr/local/openresty/nginx/pages
-      - ./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-      - ./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json
-      - ./gen-lua:/gen-lua
-      - ./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift
+    container_name: nginx-thrift-3
 
   nginx-thrift-4:
-    image: yg397/openresty-thrift:xenial
+    <<: *nginx-thrift
     hostname: nginx-thrift-4
-    depends_on:
-      jaeger-agent:
-        condition: service_started
-    restart: always
-    volumes:
-      - ./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts
-      - ./nginx-web-server/pages:/usr/local/openresty/nginx/pages
-      - ./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-      - ./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json
-      - ./gen-lua:/gen-lua
-      - ./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift
-
+    container_name: nginx-thrift-4
 
   round-robin-lb:
     image: openresty/openresty:1.25.3.1-alpine
