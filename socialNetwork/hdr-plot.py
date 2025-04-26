@@ -131,7 +131,7 @@ def plot_summarybox(fig, ax, percentiles, metadata, labels, units, summary_field
                 previous_box = info_box(ax, textstr, current_box_edge_axes_coords[0] + 0.01)
 
 
-def plot_percentiles(percentiles, labels, units, percentiles_range_max):
+def plot_percentiles(percentiles, labels, units, percentiles_range_max, xmax=None):
     fig, ax = plt.subplots(figsize=(16, 8))
     plt.rc('font', size=8)
     plt.rc('figure', titlesize=12)
@@ -155,6 +155,8 @@ def plot_percentiles(percentiles, labels, units, percentiles_range_max):
     ax.set(xlabel=f'Latency ({unit})',
            ylabel='Percentile',
            title='')
+    if xmax is not None:
+        ax.set_xlim([0, xmax])
     # ax.set_yscale('logit')
     plt.yticks(all_percentiles[0:percentiles_max_index + 1])
     plt.ylim([0, max_percentile])
@@ -183,7 +185,9 @@ def arg_parse():
     parser.add_argument('--units', default='ms', help='The latency units (ns, us, ms)')
     parser.add_argument('--percentiles-range-max', default='99.9999', help='The maximum value of the percentiles range, e.g. 99.9999 (i.e. how many nines to display)')
     parser.add_argument('--summary-fields', default='median,p999,p9999,max', help='List of fields to show in the summary box. A comma-separated list of: min, max, mean, median, p50, p90, p99, p999, p9999, ..., p999999. Default: median,p999,p9999,max')
-
+    parser.add_argument('--xmax', type=float, default=None,
+                    help='Maximum latency shown on the x-axis '
+                         '(same units as --units, e.g. 10 for 10 ms)')
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
     return args
 
@@ -208,7 +212,7 @@ def main():
     metadata = parse_metadata_files(args.files)
     labels = [re.findall(filename, file)[0][1] for file in args.files]
     # plotting data
-    fig, ax = plot_percentiles(pct_data, labels, units, args.percentiles_range_max)
+    fig, ax = plot_percentiles(pct_data, labels, units, args.percentiles_range_max, args.xmax)
     # plotting summary box
     if not args.nosummary:
         plot_summarybox(fig, ax, pct_data, metadata, labels, units, args.summary_fields.split(','))
