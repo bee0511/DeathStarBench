@@ -145,16 +145,17 @@ def plot_percentiles(percentiles, labels, units, percentiles_range_max):
 
     # percentiles
     all_percentiles = [0.25, 0.5, 0.9, 0.99, 0.999, 0.9999, 0.99999, 0.999999, 0.9999999, 0.99999999, 0.999999999]
-    all_percentile_labels = ["25%", "50%", "90%", "99%", "99.9%", "99.99%", "99.999%", "99.9999%",  "99.99999%",  "99.999999%",  "99.9999999%"]
+    all_percentile_labels = ["25%", "50%", "90%", "99%"]
+    # all_percentile_labels = ["25%", "50%", "90%", "99%", "99.9%", "99.99%", "99.999%", "99.9999%",  "99.99999%",  "99.999999%",  "99.9999999%"]
     percentiles_max_index = all_percentiles.index(max_percentile)
 
     # set axis and legend
     unit = units['name']
     ax.grid()
-    ax.set(xlabel='Percentile',
-           ylabel=f'Latency ({unit})',
-           title='Latency Percentiles (lower is better)')
-    ax.set_xscale('logit')
+    ax.set(xlabel=f'Latency ({unit})',
+           ylabel='Percentile',
+           title='')
+    # ax.set_yscale('logit')
     plt.yticks(all_percentiles[0:percentiles_max_index + 1])
     plt.ylim([0, max_percentile])
     majors = all_percentile_labels[0:percentiles_max_index + 1]
@@ -213,10 +214,6 @@ def main():
         plot_summarybox(fig, ax, pct_data, metadata, labels, units, args.summary_fields.split(','))
     # add title
     plt.suptitle(args.title)
-    if not args.noversion:
-        # add version
-        version = pkg_resources.require("hdr-plot")[0].version
-        fig.text(0.812, 0.035, f'plotted by hdr-plot v{version}', horizontalalignment='left', color='grey')
     # save image
     plt.savefig(args.output)
     print("Wrote: " + args.output)
