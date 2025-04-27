@@ -2,7 +2,7 @@
 # This script is used to run the social network test using wrk2
 
 THREAD_COUNT=8
-CONNECTION_COUNT=50
+CONNECTION_COUNT=100
 DURATION=300s
 REQUEST_RATE=50
 RESULTS_DIR="results"
@@ -31,3 +31,12 @@ wrk -D exp -t$THREAD_COUNT -c$CONNECTION_COUNT -d$DURATION -L -s ./wrk2/scripts/
     http://localhost:20003/wrk2-api/post/compose -R$REQUEST_RATE > $RESULTS_DIR/prequal_c${CONNECTION_COUNT}_d${DURATION}_r${REQUEST_RATE}.log
 
 echo "Prequal load balancing test completed."
+
+# Draw the results
+python hdr-plot.py \
+    results/rr_c${CONNECTION_COUNT}_d${DURATION}_r${REQUEST_RATE}.log \
+    results/po2_c${CONNECTION_COUNT}_d${DURATION}_r${REQUEST_RATE}.log \
+    results/prequal_c${CONNECTION_COUNT}_d${DURATION}_r${REQUEST_RATE}.log \
+    --output results/c${CONNECTION_COUNT}_d${DURATION}_r${REQUEST_RATE}.png \
+    --title "Social Network Load Balancing Test" \
+    --xmax 5
