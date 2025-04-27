@@ -156,7 +156,7 @@ def plot_percentiles(percentiles, labels, units, percentiles_range_max, xmax=Non
            ylabel='Percentile',
            title='')
     if xmax is not None:
-        ax.set_xlim([0, xmax])
+        ax.set_xlim([1.5, xmax])
     # ax.set_yscale('logit')
     plt.yticks(all_percentiles[0:percentiles_max_index + 1])
     plt.ylim([0, max_percentile])
