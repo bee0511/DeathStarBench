@@ -156,7 +156,7 @@ def plot_percentiles(percentiles, labels, units, percentiles_range_max, xmax=Non
            ylabel='Percentile',
            title='')
     if xmax is not None:
-        ax.set_xlim([1.5, xmax])
+        ax.set_xlim([3, xmax])
     # ax.set_yscale('logit')
     plt.yticks(all_percentiles[0:percentiles_max_index + 1])
     plt.ylim([0, max_percentile])
@@ -184,7 +184,7 @@ def arg_parse():
                         action="store_true")
     parser.add_argument('--units', default='ms', help='The latency units (ns, us, ms)')
     parser.add_argument('--percentiles-range-max', default='99.9999', help='The maximum value of the percentiles range, e.g. 99.9999 (i.e. how many nines to display)')
-    parser.add_argument('--summary-fields', default='median,p999,p9999,max', help='List of fields to show in the summary box. A comma-separated list of: min, max, mean, median, p50, p90, p99, p999, p9999, ..., p999999. Default: median,p999,p9999,max')
+    parser.add_argument('--summary-fields', default='median,p90,p99,max', help='List of fields to show in the summary box. A comma-separated list of: min, max, mean, median, p50, p90, p99, p999, p9999, ..., p999999. Default: median,p999,p9999,max')
     parser.add_argument('--xmax', type=float, default=None,
                     help='Maximum latency shown on the x-axis '
                          '(same units as --units, e.g. 10 for 10 ms)')
