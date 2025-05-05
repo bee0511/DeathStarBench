@@ -208,14 +208,29 @@ def main():
     }
 
     # load the data and create the plot
+    # change the file name to Prequal, RoundRobin, etc. Based on the file name
+    name_mapping = {
+        'rr': 'Round Robin',
+        'po2': 'Power of Two Choices',
+        'prequal': 'Prequal'
+    }
+    readable_names = []
     pct_data = parse_pct_files(args.files)
     metadata = parse_metadata_files(args.files)
     labels = [re.findall(filename, file)[0][1] for file in args.files]
+    for file in labels:
+        match = re.match(r'^(rr|po2|prequal)_', file)
+        if match:
+            key = match.group(1)
+            readable = name_mapping.get(key, key)
+            readable_names.append(readable)
+        else:
+            readable_names.append('Unknown')
     # plotting data
-    fig, ax = plot_percentiles(pct_data, labels, units, args.percentiles_range_max, args.xmax)
+    fig, ax = plot_percentiles(pct_data, readable_names, units, args.percentiles_range_max, args.xmax)
     # plotting summary box
     if not args.nosummary:
-        plot_summarybox(fig, ax, pct_data, metadata, labels, units, args.summary_fields.split(','))
+        plot_summarybox(fig, ax, pct_data, metadata, readable_names, units, args.summary_fields.split(','))
     # add title
     plt.suptitle(args.title)
     # save image
